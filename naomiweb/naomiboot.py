@@ -9,20 +9,28 @@ import socket
 import time
 from Crypto.Cipher import DES
 
-#triforce_ip = sys.argv[1]
-triforce_ip = "192.168.1.3"
-
 # connect to the Triforce. Port is tcp/10703.
 # note that this port is only open on
 #	- all Type-3 triforces,
 #	- pre-type3 triforces jumpered to satellite mode.
 # - it *should* work on naomi and chihiro, but due to lack of hardware, i didn't try.
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-print("connecting...")
-s.settimeout(5)
-s.connect((triforce_ip, 10703))
-print("ok!")
+s = None
+
+#print("connecting...")
+#s.settimeout(5)
+#s.connect((triforce_ip, 10703))
+#print("ok!")
+
+def connect(ip, port):
+	global s
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.settimeout(5)
+	s.connect((ip, port))
+
+def disconnect():
+	global s
+	s.close()
 
 # a function to receive a number of bytes with hard blocking
 def readsocket(n):
@@ -210,28 +218,28 @@ def HOST_DumpToFile(file):
 		file.write(HOST_Read16(0x80000000 + x * 0x10))
 		sys.stderr.write("%08x\r" % x)
 
-if 1:
-	# display "now loading..."
-	HOST_SetMode(0, 1)
-	# disable encryption by setting magic zero-key
-	SECURITY_SetKeycode("\x00" * 8)
-	
-	# uploads file. Also sets "dimm information" (file length and crc32)
-	#DIMM_UploadFile(sys.argv[2])
-	DIMM_UploadFile(sys.argv[1])
-	# restart host, this wil boot into game
-	#print "restarting in 10 seconds..."
-	#time.sleep(10)
-	HOST_Restart()
-	print("time limit hack looping...")
-	while 1:
-	# set time limit to 10h. According to some reports, this does not work.
-		TIME_SetLimit(10*60*1000)
-		time.sleep(5)
+#if 1:
+#	# display "now loading..."
+#	HOST_SetMode(0, 1)
+#	# disable encryption by setting magic zero-key
+#	SECURITY_SetKeycode("\x00" * 8)
+#	
+#	# uploads file. Also sets "dimm information" (file length and crc32)
+#	#DIMM_UploadFile(sys.argv[2])
+#	DIMM_UploadFile(sys.argv[1])
+#	# restart host, this wil boot into game
+#	#print "restarting in 10 seconds..."
+#	#time.sleep(10)
+#	HOST_Restart()
+#	print("time limit hack looping...")
+#	while 1:
+#	# set time limit to 10h. According to some reports, this does not work.
+#		TIME_SetLimit(10*60*1000)
+#		time.sleep(5)
 
-if 0:
+#if 0:
 	# this is triforce-specific, and will remove the "region check"
-	PATCH_CheckBootID()
+#	PATCH_CheckBootID()
 
 # this is not required anymore:
 #	PATCH_MakeContentError(2)

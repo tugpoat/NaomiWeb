@@ -52,7 +52,7 @@ def get_game_name(filename):
     try:
         fp = open(filename, 'rb')
         fp.seek(0x30, os.SEEK_SET)
-        filename = fp.read(32).decode('utf-8').rstrip(' ')
+        filename = fp.read(32).decode('utf-8').rstrip(' ').lstrip(' ')
         fp.close()
         return filename
 
