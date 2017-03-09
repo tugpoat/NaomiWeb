@@ -1,17 +1,19 @@
 from bottle import route, run, template, static_file, error, request, view
 import os
+import signal
 import string
 import configparser
+import json
 from naomigame import *
 from loadgame import *
 
 PREFS_FILE = "settings.cfg"
 prefs = configparser.ConfigParser()
 
-loadingjob = job(1, 1)
+loadingjob = loadjob(1, 1)
+games = []
 
 def build_games_list():
-    games = []
     games_directory = prefs['Games']['directory'] or 'games'
 
     print("Looking for NAOMI games...")
@@ -19,8 +21,8 @@ def build_games_list():
     if os.path.isdir(games_directory):
         for filename in os.listdir(games_directory):
             filename = games_directory + '/' + filename
-            print(filename)
             if(is_naomi_game(filename)):
+                print(filename)
                 game = NAOMIGame(filename)
                 games.append(game)
 
@@ -31,11 +33,13 @@ def build_games_list():
 
 @route('/')
 def index():
-    some_games = build_games_list()
+    global games
+    games = []
+    games = build_games_list()
     region = prefs['Games']['region'].lower() or 'japan'
     
-    if some_games != None:
-        return template('index', games=some_games, region=region)
+    if games != None:
+        return template('index', games=games, region=region)
     else:
         return template('index')
 
@@ -49,18 +53,26 @@ def load(hashid):
         some_games = build_games_list()
         for game in some_games:
             if game.__hash__() == hashid:
-                loadingjob = job(game, prefs)
+                loadingjob = loadjob(game, prefs)
                 loadingjob.start()
+                
+                return json.dumps({"status": loadingjob.status(), "message": loadingjob.message()})
+                
+                #if loadingjob.finished():
+                    #return "Done loading the game."
+                #else:
+                    #return "Loading game"
 
-                if loadingjob.finished():
-                    return "Done loading the game."
-                else:
-                    return "Game isn't loaded yet."
-                return "Found the game" + str(hashid) + ", creating job..."
+                #return "Found the game" + str(hashid) + ", creating job..."
 
 
 
     return "Unable to find" + str(hashid) + '!'
+
+@route('/status')
+def status():
+    global loadingjob
+    return json.dumps({"status": loadingjob.status(), "message": loadingjob.message()})
 
 @route('/config', method='GET')
 def config():
@@ -86,6 +98,10 @@ def do_config():
         prefs.write(prefs_file)
 
     return template('config', network_ip=network_ip, network_subnet=network_subnet, games_directory=games_directory, games_region=games_region, did_config=True)
+
+@route('/favicon.ico')
+def favicon():
+    return static_file('favicon.ico', 'static')
 
 @route('/static/<filepath:path>')
 def server_static(filepath):
