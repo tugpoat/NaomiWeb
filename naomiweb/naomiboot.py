@@ -25,16 +25,17 @@ s = None
 def connect(ip, port):
 	global s
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	s.settimeout(5)
+#	s.settimeout(20)
 	s.connect((ip, port))
 
 def disconnect():
 	global s
 	s.close()
+	s = None
 
 # a function to receive a number of bytes with hard blocking
 def readsocket(n):
-	res = ""
+	res = "".encode()
 	while len(res) < n:
 		res += s.recv(n - len(res))
 	return res
@@ -44,7 +45,7 @@ def HOST_Read16(addr):
 	s.send(struct.pack("<II", 0xf0000004, addr))
 	data = readsocket(0x20)
 	res = ""
-	for d in xrange(0x10):
+	for d in range(0x10):
 		res += data[4 + (d ^ 3)]
 	return res
 
@@ -69,7 +70,7 @@ def DIMM_GetInformation():
 	return readsocket(0x10)
 
 def DIMM_SetInformation(crc, length):
-	print("length: {0:b}".format(length))
+	print(("length: {0:b}".format(length)))
 	s.send(struct.pack("<IIII", 0x1900000C, crc & 0xFFFFFFFF, length, 0))
 
 def DIMM_Upload(addr, data, mark):
@@ -85,7 +86,7 @@ def CONTROL_Read(addr):
 
 def SECURITY_SetKeycode(data):
 	assert len(data) == 8
-	s.send(struct.pack("<I", 0x7F000008) + data)
+	s.send(struct.pack("<I", 0x7F000008) + data.encode())
 
 def HOST_SetMode(v_and, v_or):
 	s.send(struct.pack("<II", 0x07000004, (v_and << 8) | v_or))
@@ -110,7 +111,7 @@ def TIME_SetLimit(data):
 	s.send(struct.pack("<II", 0x17000004, data))
 
 def DIMM_DumpToFile(file):
-	for x in xrange(0, 0x20000, 1):
+	for x in range(0, 0x20000, 1):
 		file.write(DIMM_Read(x * 0x8000, 0x8000))
 		sys.stderr.write("%08x\r" % x)
 
@@ -140,8 +141,9 @@ def DIMM_UploadFile(name, key = None):
 		DIMM_Upload(addr, data, 0)
 		crc = zlib.crc32(data, crc)
 		addr += len(data)
+	a.close()
 	crc = ~crc
-	DIMM_Upload(addr, "12345678", 1)
+	DIMM_Upload(addr, "12345678".encode(), 1)
 	DIMM_SetInformation(crc, addr)
 
 # obsolete
@@ -214,7 +216,7 @@ def PATCH_CheckBootID():
 # Good Luck. Warez are evil.
 
 def HOST_DumpToFile(file):
-	for x in xrange(0, 0x10000, 1):
+	for x in range(0, 0x10000, 1):
 		file.write(HOST_Read16(0x80000000 + x * 0x10))
 		sys.stderr.write("%08x\r" % x)
 

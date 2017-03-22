@@ -32,7 +32,8 @@ class loadjob:
         print("Uploading " + game_path + " to " + self._configuration.get('Network', 'ip'))
 
         try:
-            naomiboot.connect(self._configuration.get('Network', 'ip'), 57621)
+            naomiboot.connect(self._configuration.get('Network', 'ip'), 10703)
+#            naomiboot.HOST_Restart()
         except:
             self._status = 1
             self._message = "Connection Error"
@@ -43,18 +44,20 @@ class loadjob:
             naomiboot.HOST_SetMode(0, 1)
             # disable encryption by setting magic zero-key
             naomiboot.SECURITY_SetKeycode("\x00" * 8)
-
+            print("set keycode")
             self._message = "Uploading " + game_path
             # uploads file. Also sets "dimm information" (file length and crc32)
             naomiboot.DIMM_UploadFile(game_path)
-
+            
             self._message = "Booting game"
+            print("booting")
             # restart host, this will boot into game
             naomiboot.HOST_Restart()
 
             # set time limit to 10h. According to some reports, this does not work.
 
             naomiboot.TIME_SetLimit(10*60*1000)
+            naomiboot.disconnect()
         except:
             self._status = 2
             self._message = "Error loading game on NAOMI"
