@@ -1,4 +1,4 @@
-from bottle import route, run, template, static_file, error, request, view
+from bottle import route, run, template, static_file, error, request, response, view
 import os
 import signal
 import string
@@ -48,31 +48,25 @@ def index():
 def load(hashid):
     global loadingjob
     if loadingjob.finished() == False:
-        return "Error: A game is currently being loaded! Try again later"
+        return 
     else:
         some_games = build_games_list()
         for game in some_games:
             if game.__hash__() == hashid:
                 loadingjob = loadjob(game, prefs)
                 loadingjob.start()
-                
-                return json.dumps({"status": loadingjob.status(), "message": loadingjob.message()})
-                
-                #if loadingjob.finished():
-                    #return "Done loading the game."
-                #else:
-                    #return "Loading game"
 
-                #return "Found the game" + str(hashid) + ", creating job..."
+                return
 
-
-
-    return "Unable to find" + str(hashid) + '!'
+    return "data: " + json.dumps({"status": loadingjob.status(), "message": "Unable to find " + str(hashid) + '!'}) + "\n\n"
 
 @route('/status')
 def status():
     global loadingjob
-    return json.dumps({"status": loadingjob.status(), "message": loadingjob.message()})
+    response.content_type = "text/event-stream"
+    response.cache_control = "no-cache"
+    return "data: " + json.dumps({"status": loadingjob.status(), "message": loadingjob.message()}) + "\n\n"
+    
 
 @route('/config', method='GET')
 def config():

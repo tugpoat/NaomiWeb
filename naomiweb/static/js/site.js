@@ -14,19 +14,12 @@ $('.game').click(function(event)
 	});
 });
 
-setInterval(function() {
-	$.ajax
-	({
-		url: '/status',
-		type: 'get',
-		success: function(result)
-		{
-			var json = $.parseJSON(result)
-			if (json.status != 0) {
-				$('#status').addClass('error');
-			} else
-				$('#status').removeClass('error');
-			$('#status').html(json.message);
-		}
-	});
-}, 1000);
+var source = new EventSource("/status");
+source.onmessage = function(event) {
+	var json = $.parseJSON(event.data);
+	if (json.status != 0) {
+		$('#status').addClass('error');
+	} else
+		$('#status').removeClass('error');
+	$("#status").html(json.message);
+};

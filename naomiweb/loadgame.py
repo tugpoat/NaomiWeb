@@ -33,7 +33,6 @@ class loadjob:
 
         try:
             naomiboot.connect(self._configuration.get('Network', 'ip'), 10703)
-#            naomiboot.HOST_Restart()
         except:
             self._status = 1
             self._message = "Connection Error"
