@@ -2,7 +2,7 @@ NaomiWeb
 ========
 NAOMIWeb/NetDIMM Loader is A Python-based web interface for browsing games to send to a NetDIMM. It's powered by bottle.py and Bootstrap. I recommended using this with a Raspberry Pi, but other hardware can be used instead. All documentation will be written for using it with a Pi.
 
-Note: This is still a major work in progress and doesn't work yet.
+Note: This is still a major work in progress.
 
 Requirements
 ------------
@@ -46,6 +46,6 @@ Hardware Setup Example
 	                                  +------------------+
 Todo
 ----
- * Interface with triforce_tools.py to actually do stuff
+ * Maybe support multiple endpoints for netbooting?
  * Implement job system (loadgame.py). Jobs will keep track of threads sending data to a NetDIMM.
  * Unit tests and E2E tests
