@@ -7,9 +7,12 @@
 	<p>Choose a game to play</p>
 	% for game in games:
 		<p class="game">
-			<a class="game-link" href="load/{{game.__hash__()}}">{{game.name[region]}}</a> <span class="label label-default">{{round(game.size/float(1024*1024), 1)}} MB</span>
+			<a class="game-link {{game.status}}" href="load/{{game.checksum}}">{{game.name}}</a> <span class="label label-default">{{round(game.size/float(1024*1024), 1)}} MB</span>
 		</p>
 	% end
+	% end
+	% for f in filters:
+		<span>{{f[0]}} = {{f[1]}}</span>
 	% end
 
 	% if not defined('games'):

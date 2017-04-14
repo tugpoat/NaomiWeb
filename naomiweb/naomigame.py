@@ -1,7 +1,14 @@
 import io
 import os
+import hashlib
 
 class NAOMIGame(object):
+    _name = None
+    _filename = None
+    _size = None
+    _file_hash = None
+    _attributes = None
+    status = None
 
     def __get_names(self):
         'Get game names from NAOMI rom file.'
@@ -27,10 +34,22 @@ class NAOMIGame(object):
                 'australia': ''}
         self.filename = filename
         self.__get_names()
+        self.checksum = self.__checksum();
         try:
             self.size = os.stat(filename).st_size
         except Exception:
             self.size = 0
+
+    def __checksum(self):
+        with open(self.filename, 'rb') as fh:
+            m = hashlib.md5()
+            while True:
+                data = fh.read(8192)
+                if not data:
+                    break
+                m.update(data)
+                
+            return m.hexdigest()
 
     def __hash__(self):
         return hash((self.name['japan'], self.filename, self.size)) & 0xffffffff

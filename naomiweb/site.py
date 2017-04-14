@@ -4,19 +4,38 @@ import signal
 import string
 import configparser
 import json
+import sqlite3
+import hashlib
+import time
 from naomigame import *
 from loadgame import *
 
 PREFS_FILE = "settings.cfg"
 prefs = configparser.ConfigParser()
-
+sql = None
 loadingjob = loadjob(1, 1)
 games = []
+game_list = []
+filters = []
 
+
+#this function is pretty spaghetti but further abstraction really isn't necessary
 def build_games_list():
+    global sql
+    global games_list
     games_directory = prefs['Games']['directory'] or 'games'
 
-    print("Looking for NAOMI games...")
+    print("Checking installed games")
+    #check to make sure all the games we think are installed actually are. if not, purge them from the DB.
+    installed_games = sql.execute("SELECT id, filename, file_hash FROM installed_games").fetchall()
+    for game in installed_games:
+        if not os.path.isfile(game[1]):
+            print(game[1] + " no longer installed, purging from DB")
+            sql.execute("DELETE FROM installed_games WHERE id=" + str(game[0]))
+
+    sql.commit()
+
+    print("Looking for NAOMI games")
 
     if os.path.isdir(games_directory):
         for filename in os.listdir(games_directory):
@@ -24,8 +43,35 @@ def build_games_list():
             if(is_naomi_game(filename)):
                 print(filename)
                 game = NAOMIGame(filename)
-                games.append(game)
 
+                identity = sql.execute("SELECT * FROM games WHERE header_title='" + game.name['japan'] + "' LIMIT 1").fetchone()
+                print(identity)
+                
+                if identity: #game is valid, check it and get its attributes
+                    installed_game = sql.execute("SELECT * FROM installed_games WHERE game_id = " + str(identity[0])).fetchone()
+                    print("valid game")
+
+                    game.name = identity[2]
+
+                    if installed_game:
+                        #if game installed, verify integrity from stored checksum
+                        print("game installed")
+                        if game.checksum != installed_game[3]:
+                            print("Checksum error in " + filename + " expected " + installed_game[3] + " got " + checksum)
+                            game.status = "error"
+                        
+                        game.checksum = installed_game[3]
+                    else:
+                        print ("installing"  + filename)
+                        sql.execute("INSERT INTO installed_games(game_id, filename, file_hash) VALUES(" + str(identity[0]) + ",'" + filename + "','" + game.checksum + "')")
+                    
+                    attributes = sql.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(identity[0])).fetchall()
+                    game.attributes = attributes
+
+                    games.append(game)
+
+                    print(games[0].attributes)
+        sql.commit()
         return games
 
     else:
@@ -34,25 +80,53 @@ def build_games_list():
 @route('/')
 def index():
     global games
-    games = []
-    games = build_games_list()
     region = prefs['Games']['region'].lower() or 'japan'
-    
-    if games != None:
-        return template('index', games=games, region=region)
+    if games != None and len(filters) > 0:
+        temp = []
+
+        # Loop through filters for each game, and if an attribute matches the filter include it in the list. simple, effective.
+        num_filters = len(filters)
+        for g in games:
+            num_matched = 0
+            for f in filters:
+                for a in g.attributes:
+                    if f[0] == a[0] and f[1] == a[1]:
+                        num_matched += 1
+
+            if num_filters == num_matched:
+                temp.append(g)
+                
+        return template('index', games=temp, region=region, filters=filters)
+    elif games != None:
+        return template('index', games=games, region=region, filters=filters)
     else:
         return template('index')
 
+@route('/rescan')
+def rescan():
+    global games
+    games = build_games_list()
 
-@route('/load/<hashid:int>')
+@route('/filter/add/<name>/<value>')
+def add_filter(name, value):
+    filters.append((name,value))
+
+@route('/filter/clear')
+def clear_filters():
+    filters.clear()
+
+@route('/filter/get')
+def get_filters():
+    return json.dumps(filters)
+
+@route('/load/<hashid>')
 def load(hashid):
     global loadingjob
     if loadingjob.finished() == False:
         return 
     else:
-        some_games = build_games_list()
-        for game in some_games:
-            if game.__hash__() == hashid:
+        for game in games:
+            if game.checksum == hashid:
                 loadingjob = loadjob(game, prefs)
                 loadingjob.start()
 
@@ -75,7 +149,7 @@ def config():
     games_directory = prefs['Games']['directory'] or 'games'
     games_region = prefs['Games']['region'].lower() or 'japan'
 
-    return template('config', network_ip=network_ip, network_subnet=network_subnet, games_directory=games_directory, games_region=games_region)
+    return template('config', network_ip=network_ip, network_subnet=network_subnet, games_directory=games_directory, games_region=games_region, filters=filters)
 
 @route('/config', method='POST')
 def do_config():
@@ -105,8 +179,14 @@ def server_static(filepath):
 def error404(error):
     return '<p>Error: 404</p>'
 
+sql = sqlite3.connect('naomiweb.sqlite')
+
 prefs_file = open(PREFS_FILE, 'r')
 prefs.read_file(prefs_file)
 prefs_file.close()
+
+filters = prefs.items('Filters') or []
+
+build_games_list()
 
 run(host='0.0.0.0', port=8000, debug=True)

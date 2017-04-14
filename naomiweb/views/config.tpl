@@ -68,6 +68,20 @@
 			</div>
 		</div>
 
+		<h2>Filters</h2>
+		<div class="row container">
+			<div class="form-group">
+				<label class="col-sm-2 control-label"></label>
+				<div class="col-sm-3">
+					% for f in filters:
+					<select class="form-control" name="sel-{{f[0]}}">
+
+					</select>
+					% end
+				</div>
+			</div>
+		</div>
+
 		<div class="row container">
 			<div class="col-md-2">
 				<button type="submit" class="btn btn-default">Save</button>
