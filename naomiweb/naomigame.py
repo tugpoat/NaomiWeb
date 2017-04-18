@@ -10,30 +10,22 @@ class NAOMIGame(object):
     _attributes = None
     status = None
 
-    def __get_names(self):
+    def __get_name(self):
         'Get game names from NAOMI rom file.'
         try:
             fp = open(self.filename, 'rb')
             fp.seek(0x30, os.SEEK_SET)
 
-            self.name['japan'] = fp.read(32).decode('utf-8').rstrip(' ')
-            self.name['usa'] = fp.read(32).decode('utf-8').rstrip(' ')
-            self.name['euro'] = fp.read(32).decode('utf-8').rstrip(' ')
-            self.name['asia'] = fp.read(32).decode('utf-8').rstrip(' ')
-            self.name['australia'] = fp.read(32).decode('utf-8').rstrip(' ')
+            self.name = fp.read(32).decode('utf-8').rstrip(' ').lstrip(' ')
 
             fp.close()
         except Exception:
             print("__get_names(): Error reading names from" + self.filename)
 
     def __init__(self, filename):
-        self.name = {'japan': '',
-                'usa': '',
-                'euro': '',
-                'asia': '',
-                'australia': ''}
+        self.name = ''
         self.filename = filename
-        self.__get_names()
+        self.__get_name()
         self.checksum = self.__checksum();
         try:
             self.size = os.stat(filename).st_size
@@ -52,8 +44,10 @@ class NAOMIGame(object):
             return m.hexdigest()
 
     def __hash__(self):
-        return hash((self.name['japan'], self.filename, self.size)) & 0xffffffff
+        return hash((self.name, self.filename, self.size)) & 0xffffffff
 
+
+# Having functions like this in this module is a little gross. TODO: incorporate this functionality into the class.
 def is_naomi_game(filename):
     'Determine (loosely) if a file is a valid NAOMI netboot game'
     try:

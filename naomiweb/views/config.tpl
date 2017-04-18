@@ -33,7 +33,7 @@
 					<input type="text" class="form-control" name="games_directory" value="{{games_directory}}" placeholder="Directory" />
 				</div>
 			</div>
-
+<!--
 			<div class="form-group">
 				<label class="col-sm-2 control-label">Region</label>
 				<div class="col-sm-3">
@@ -67,7 +67,7 @@
 				</div>
 			</div>
 		</div>
-
+-->
 		<h2>Filters</h2>
 		<div class="row container">
 			<div class="form-group">

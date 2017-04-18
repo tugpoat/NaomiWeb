@@ -5,8 +5,6 @@ import string
 import configparser
 import json
 import sqlite3
-import hashlib
-import time
 from naomigame import *
 from loadgame import *
 
@@ -15,67 +13,89 @@ prefs = configparser.ConfigParser()
 sql = None
 loadingjob = loadjob(1, 1)
 games = []
-game_list = []
 filters = []
 
 
 #this function is pretty spaghetti but further abstraction really isn't necessary
 def build_games_list():
     global sql
-    global games_list
+    games = []
+
     games_directory = prefs['Games']['directory'] or 'games'
 
-    print("Checking installed games")
+    #get list of installed games
+    installed_games = sql.execute("SELECT installed_games.id, games.id as game_id, filename, games.title as game_name, file_hash FROM installed_games JOIN games ON game_id=games.id ORDER BY game_name").fetchall()
+    
     #check to make sure all the games we think are installed actually are. if not, purge them from the DB.
-    installed_games = sql.execute("SELECT id, filename, file_hash FROM installed_games").fetchall()
-    for game in installed_games:
-        if not os.path.isfile(game[1]):
-            print(game[1] + " no longer installed, purging from DB")
-            sql.execute("DELETE FROM installed_games WHERE id=" + str(game[0]))
+    print("Checking installed games")
+    for igame in installed_games:
+        filepath = games_directory + '/' + igame[2]
+        if(is_naomi_game(filepath)):
+            if not os.path.isfile(filepath):
+                print(igame[2] + " no longer installed, purging from DB")
+                sql.execute("DELETE FROM installed_games WHERE id=" + str(igame[0]))
+                continue # process next item
 
+            print("\t" + igame[2])
+            # perform checksum verification of ROM file against stored value
+            game = NAOMIGame(filepath)
+            if igame[4] != game.checksum:
+                print("Checksum error in " + filename + " expected " + installed_game[4] + " got " + game.checksum)
+                game.status = "error"
+
+            game.name = igame[3]
+            game.attributes = sql.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(igame[1])).fetchall()
+            games.append(game)
+
+    #don't commit any changes until we successfully scan installed games
     sql.commit()
 
-    print("Looking for NAOMI games")
+
+
+    print("Looking for new NAOMI games")
 
     if os.path.isdir(games_directory):
         for filename in os.listdir(games_directory):
-            filename = games_directory + '/' + filename
-            if(is_naomi_game(filename)):
-                print(filename)
-                game = NAOMIGame(filename)
+            filepath = games_directory + '/' + filename
 
-                identity = sql.execute("SELECT * FROM games WHERE header_title='" + game.name['japan'] + "' LIMIT 1").fetchone()
-                print(identity)
+            #Loop through the games we fetched from the DB.
+            #If this file is installed, no further processing necessary. Continue to the next game.
+            installed = False
+            for igame in installed_games:
+                if igame[2] == filename:
+                    installed = True
+                    break;
+
+            if installed: continue
+
+            # Verify t
+            if(is_naomi_game(filepath)):
+                #print(filename)
+                game = NAOMIGame(filepath)
+
+                identity = sql.execute("SELECT * FROM games WHERE header_title='" + game.name + "' LIMIT 1").fetchone()
+                #print(identity)
                 
                 if identity: #game is valid, check it and get its attributes
                     installed_game = sql.execute("SELECT * FROM installed_games WHERE game_id = " + str(identity[0])).fetchone()
-                    print("valid game")
+                    print(filename + " identified as " + identity[2])
 
                     game.name = identity[2]
 
-                    if installed_game:
-                        #if game installed, verify integrity from stored checksum
-                        print("game installed")
-                        if game.checksum != installed_game[3]:
-                            print("Checksum error in " + filename + " expected " + installed_game[3] + " got " + checksum)
-                            game.status = "error"
-                        
-                        game.checksum = installed_game[3]
-                    else:
-                        print ("installing"  + filename)
+                    if not installed_game:
+                        print ("\tInstalling "  + filename)
                         sql.execute("INSERT INTO installed_games(game_id, filename, file_hash) VALUES(" + str(identity[0]) + ",'" + filename + "','" + game.checksum + "')")
-                    
-                    attributes = sql.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(identity[0])).fetchall()
-                    game.attributes = attributes
-
+                else:
+                    print("\tUnable to identify " + filename)
+                    game.name = filename
+                    game.attributes = []
                     games.append(game)
 
-                    print(games[0].attributes)
         sql.commit()
-        return games
 
-    else:
-        return None
+    games.sort(key = lambda games: games.name.lower())
+    return games
+
 
 @route('/')
 def index():
@@ -96,16 +116,30 @@ def index():
             if num_filters == num_matched:
                 temp.append(g)
                 
-        return template('index', games=temp, region=region, filters=filters)
+        return template('index', games=temp, region=region, activefilters=filters)
     elif games != None:
-        return template('index', games=games, region=region, filters=filters)
+        return template('index', games=games, region=region, activefilters=filters)
     else:
         return template('index')
+
+
+@route('/updatedb', method='POST')
+def updatedb():
+    #TODO: Handle file upload and reopen sqlite DB. Then rescan games
+    #STUB
+    return
 
 @route('/rescan')
 def rescan():
     global games
     games = build_games_list()
+
+@route('/cleargames')
+def cleargames():
+    global sql
+    sql.execute("DELETE FROM installed_games")
+    sql.execute("VACUUM")
+    sql.commit()
 
 @route('/filter/add/<name>/<value>')
 def add_filter(name, value):
@@ -187,6 +221,6 @@ prefs_file.close()
 
 filters = prefs.items('Filters') or []
 
-build_games_list()
+games = build_games_list()
 
 run(host='0.0.0.0', port=8000, debug=True)

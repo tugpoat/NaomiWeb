@@ -11,7 +11,7 @@
 		</p>
 	% end
 	% end
-	% for f in filters:
+	% for f in activefilters:
 		<span>{{f[0]}} = {{f[1]}}</span>
 	% end
 
