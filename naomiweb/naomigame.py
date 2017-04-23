@@ -13,7 +13,7 @@ class NAOMIGame(object):
     def __get_name(self):
         'Get game names from NAOMI rom file.'
         try:
-            fp = open(self.filename, 'rb')
+            fp = open(self.filepath, 'rb')
             fp.seek(0x30, os.SEEK_SET)
 
             self.name = fp.read(32).decode('utf-8').rstrip(' ').lstrip(' ')
@@ -22,18 +22,19 @@ class NAOMIGame(object):
         except Exception:
             print("__get_names(): Error reading names from" + self.filename)
 
-    def __init__(self, filename):
+    def __init__(self, filepath):
         self.name = ''
-        self.filename = filename
+        self.filepath = filepath
+        self.filename = os.path.basename(filepath)
         self.__get_name()
         self.checksum = self.__checksum();
         try:
-            self.size = os.stat(filename).st_size
+            self.size = os.stat(filepath).st_size
         except Exception:
             self.size = 0
 
     def __checksum(self):
-        with open(self.filename, 'rb') as fh:
+        with open(self.filepath, 'rb') as fh:
             m = hashlib.md5()
             while True:
                 data = fh.read(8192)
@@ -44,7 +45,7 @@ class NAOMIGame(object):
             return m.hexdigest()
 
     def __hash__(self):
-        return hash((self.name, self.filename, self.size)) & 0xffffffff
+        return hash((self.name, self.filepath, self.size)) & 0xffffffff
 
 
 # Having functions like this in this module is a little gross. TODO: incorporate this functionality into the class.

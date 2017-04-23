@@ -37,12 +37,14 @@ def build_games_list():
                 continue # process next item
 
             print("\t" + igame[2])
+
             # perform checksum verification of ROM file against stored value
             game = NAOMIGame(filepath)
             if igame[4] != game.checksum:
                 print("Checksum error in " + filename + " expected " + installed_game[4] + " got " + game.checksum)
                 game.status = "error"
 
+            game.id = igame[1]
             game.name = igame[3]
             game.attributes = sql.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(igame[1])).fetchall()
             games.append(game)
@@ -73,20 +75,25 @@ def build_games_list():
                 #print(filename)
                 game = NAOMIGame(filepath)
 
-                identity = sql.execute("SELECT * FROM games WHERE header_title='" + game.name + "' LIMIT 1").fetchone()
+                identity = sql.execute("SELECT id, title FROM games WHERE header_title='" + game.name + "' LIMIT 1").fetchone()
                 #print(identity)
                 
-                if identity: #game is valid, check it and get its attributes
+                if identity: #game is valid.
+
                     installed_game = sql.execute("SELECT * FROM installed_games WHERE game_id = " + str(identity[0])).fetchone()
                     print(filename + " identified as " + identity[2])
-
-                    game.name = identity[2]
+                    
+                    game.id = identity[0]
+                    game.name = identity[1]
+                    game.attributes = sql.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(igame[1])).fetchall()
+                    games.append(game)
 
                     if not installed_game:
                         print ("\tInstalling "  + filename)
                         sql.execute("INSERT INTO installed_games(game_id, filename, file_hash) VALUES(" + str(identity[0]) + ",'" + filename + "','" + game.checksum + "')")
                 else:
                     print("\tUnable to identify " + filename)
+                    game.id = 0
                     game.name = filename
                     game.attributes = []
                     games.append(game)
@@ -100,7 +107,7 @@ def build_games_list():
 @route('/')
 def index():
     global games
-    region = prefs['Games']['region'].lower() or 'japan'
+    
     if games != None and len(filters) > 0:
         temp = []
 
@@ -116,9 +123,9 @@ def index():
             if num_filters == num_matched:
                 temp.append(g)
                 
-        return template('index', games=temp, region=region, activefilters=filters)
+        return template('index', games=temp, activefilters=filters)
     elif games != None:
-        return template('index', games=games, region=region, activefilters=filters)
+        return template('index', games=games, activefilters=filters)
     else:
         return template('index')
 

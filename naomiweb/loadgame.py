@@ -26,7 +26,7 @@ class loadjob:
         '''
         thread worker for job.
         '''
-        game_path = self._game.filename
+        game_path = self._game.filepath
         self._message = "Connecting to " + self._configuration.get('Network', 'ip')
         
         print("Uploading " + game_path + " to " + self._configuration.get('Network', 'ip'))
