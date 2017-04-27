@@ -30,11 +30,13 @@ def build_games_list():
     print("Checking installed games")
     for igame in installed_games:
         filepath = games_directory + '/' + igame[2]
+
+        if not os.path.isfile(filepath):
+            print(igame[2] + " no longer installed, purging from DB")
+            sql.execute("DELETE FROM installed_games WHERE id=" + str(igame[0]))
+            continue # process next item
+
         if(is_naomi_game(filepath)):
-            if not os.path.isfile(filepath):
-                print(igame[2] + " no longer installed, purging from DB")
-                sql.execute("DELETE FROM installed_games WHERE id=" + str(igame[0]))
-                continue # process next item
 
             print("\t" + igame[2])
 
@@ -78,19 +80,21 @@ def build_games_list():
                 identity = sql.execute("SELECT id, title FROM games WHERE header_title='" + game.name + "' LIMIT 1").fetchone()
                 #print(identity)
                 
-                if identity: #game is valid.
-
+                if identity: #game is valid
                     installed_game = sql.execute("SELECT * FROM installed_games WHERE game_id = " + str(identity[0])).fetchone()
-                    print(filename + " identified as " + identity[2])
                     
-                    game.id = identity[0]
-                    game.name = identity[1]
-                    game.attributes = sql.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(igame[1])).fetchall()
-                    games.append(game)
-
                     if not installed_game:
                         print ("\tInstalling "  + filename)
                         sql.execute("INSERT INTO installed_games(game_id, filename, file_hash) VALUES(" + str(identity[0]) + ",'" + filename + "','" + game.checksum + "')")
+                        installed_game = sql.execute("SELECT * FROM installed_games WHERE game_id = " + str(identity[0])).fetchone()
+
+                    #FIXME: KNOWN ISSUE: IF TWO IDENTICAL-HEADER GAMES EXIST, THE SECOND WILL NEVER BE INSTALLED.
+                    
+                    print(filename + " identified as " + identity[1])
+                    game.id = identity[0]
+                    game.name = identity[1]
+                    game.attributes = sql.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(installed_game[1])).fetchall()
+                    games.append(game)
                 else:
                     print("\tUnable to identify " + filename)
                     game.id = 0
@@ -214,6 +218,9 @@ def favicon():
 
 @route('/static/<filepath:path>')
 def server_static(filepath):
+    if 'images/' in filepath and not os.path.isfile('static/'+filepath):
+        return static_file('images/0.jpg', 'static')
+
     return static_file(filepath, 'static')
 
 @error(404)

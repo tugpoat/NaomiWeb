@@ -6,13 +6,13 @@
 	% if defined('games'):
 	<p>Choose a game to play</p>
 	% for game in games:
-		<div class="label label-default game">
+		<div class="label label-default game {{game.status}}">
 			<div class="col0">
-				<img src="/static/images/{{game.id}}.jpg" />
+				<img src="/static/images/{{game.id}}.jpg" alt="game image">
 			</div>
 			<div class="col1">
-				<div><a class="game-link {{game.status}}" href="load/{{game.checksum}}">{{game.name}}</a></div>
-				<div><em>{{game.filename}}</em> <span class="label label-default fileinfo">{{round(game.size/float(1024*1024), 1)}} MB</span></div>
+				<div><a class="game-link" href="load/{{game.checksum}}">{{game.name}}</a></div>
+				<div><span class="filename"><em>{{game.filename}}</em></span> <span class="label label-default fileinfo">{{round(game.size/float(1024*1024), 1)}} MB</span></div>
 			</div>
 			
 		</div>

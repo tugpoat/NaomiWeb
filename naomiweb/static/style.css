@@ -21,8 +21,9 @@ div.game {
 }
 
 div.game div.col0 img {
-	width: 240px;
-	height: 135px;
+	width: 100%;
+	height: auto;
+	max-width: 120px;
 }
 
 div.game div {
@@ -30,23 +31,27 @@ div.game div {
 	padding-right: 0px;
 }
 
+div.col1 {
+	vertical-align: middle;
+}
 
-div.col1 div{
+div.col1 div {
 	display: block;
 	margin: 0.2em 0.2em;
-	padding-right: 240px;
+	text-align: left;
 	white-space: pre-wrap; /* css-3 */    
     white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
     white-space: -pre-wrap; /* Opera 4-6 */    
     white-space: -o-pre-wrap; /* Opera 7 */    
     word-wrap: break-word; /* Internet Explorer 5.5+ */
-	text-align: left;
 }
-
-div.col1 a {font-size: 2em;}
 
 .fileinfo {
 	background-color: #BC6BC7;
+}
+
+.filename {
+	font-size: .75em;
 }
 
 .footer {
@@ -63,4 +68,19 @@ div.col1 a {font-size: 2em;}
 
 .error {
 	background: #f26565;
+}
+
+@media only screen and (min-width: 400px) {
+div.game div.col0 img {
+	width: 100%;
+	height: auto;
+	max-width: 240px;
+}
+
+div.col1 a {
+	font-size: 2em;
+}
+
+.filename {
+	font-size: 1em;
 }
