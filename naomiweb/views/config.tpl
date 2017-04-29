@@ -33,7 +33,7 @@
 					<input type="text" class="form-control" name="games_directory" value="{{games_directory}}" placeholder="Directory" />
 				</div>
 			</div>
-
+<!--
 		<h2>Filters</h2>
 		<div class="row container">
 			<div class="form-group">
@@ -47,7 +47,7 @@
 				</div>
 			</div>
 		</div>
-
+-->
 		<div class="row container">
 			<div class="col-md-2">
 				<button type="submit" class="btn btn-default">Save</button>
