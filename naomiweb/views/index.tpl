@@ -3,6 +3,31 @@
 <div class="container">
 	% include('navbar.tpl', activePage='games')
   	
+		<div class="row container" id="filters">
+			Filters
+			<select class="form-control filter-group" id="filter-group" name="filter-group">
+			% for fg in filter_groups:
+				<option value="{{fg[0]}}">{{fg[1]}}</option>
+			% end
+			</select>
+			<select class="form-control filter-value" id="filter-value" name="filter-value">
+				% for fg in filter_values:
+					<optgroup id="{{fg[0]}}" label="select" class="hidden">
+					% for g in fg[1]:
+						<option value="{{g[0]}}">{{g[1]}}</option>
+					% end
+					</optgroup>
+				% end
+			</select>
+		<button id="add-filter">Add</button>
+
+	</div>
+	<div class="row container">
+		Active Filters:
+		% for f in activefilters:
+			<span><a class="rm-filter" href="/filter/rm/{{f[0]}}/{{f[1]}}">{{f[0]}} = {{f[1]}}</a></span>
+		% end
+	</div>
 	% if defined('games'):
 	<p>Choose a game to play</p>
 	% for game in games:
@@ -18,9 +43,7 @@
 		</div>
 	% end
 	% end
-	% for f in activefilters:
-		<span>{{f[0]}} = {{f[1]}}</span>
-	% end
+
 
 	% if not defined('games'):
 	<div class="alert alert-danger"><span class="glyphicon glyphicon-warning-sign"></span> No games were found! Verify that the directory set on the configuration screen exists and contains valid NAOMI games.</div>

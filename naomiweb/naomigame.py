@@ -15,12 +15,16 @@ class NAOMIGame(object):
         except Exception:
             print("__get_names(): Error reading names from" + self.filename)
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, skip_checksum = False):
         self.name = ''
         self.filepath = filepath
         self.filename = os.path.basename(filepath)
+        self.status = None
         self.__get_name()
-        self.checksum = self.__checksum();
+
+        if not skip_checksum:
+            self.checksum = self.__checksum();
+
         try:
             self.size = os.stat(filepath).st_size
         except Exception:

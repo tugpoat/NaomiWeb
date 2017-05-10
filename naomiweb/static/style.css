@@ -81,6 +81,21 @@ div.col1 a {
 	font-size: 2em;
 }
 
+#filters {
+	display: block;
+}
+#filters select{
+	display: inline;
+	width: 40%;
+}
+#add-filter {
+	width: 10%;
+}
+
 .filename {
 	font-size: 1em;
+}
+
+.hidden {
+	visibility: hidden;
 }

@@ -8,6 +8,16 @@
 	%end
 
 	<form class="form-horizontal" action="config" method="POST" role="form">
+		<h2>Main</h2>
+		<div class="row container">
+			<div class="form-group">
+				<label class="col-sm-2 control-label">Skip checksum on startup for installed games</label>
+				<div class="col-sm-3">
+					<input type="checkbox" class="form-control" name="skip_checksum" {{skip_checksum}} />
+				</div>
+			</div>
+		</div>
+		
 		<h2>Network</h2>
 		<div class="row container">
 			<div class="form-group">
@@ -33,21 +43,16 @@
 					<input type="text" class="form-control" name="games_directory" value="{{games_directory}}" placeholder="Directory" />
 				</div>
 			</div>
-<!--
-		<h2>Filters</h2>
+		</div>
 		<div class="row container">
 			<div class="form-group">
 				<label class="col-sm-2 control-label"></label>
 				<div class="col-sm-3">
-					% for f in filters:
-					<select class="form-control" name="sel-{{f[0]}}">
-
-					</select>
-					% end
+					<button id="rescan-games">Rescan games</button>
 				</div>
 			</div>
 		</div>
--->
+		
 		<div class="row container">
 			<div class="col-md-2">
 				<button type="submit" class="btn btn-default">Save</button>

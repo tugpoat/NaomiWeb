@@ -43,13 +43,13 @@ class loadjob:
             naomiboot.HOST_SetMode(0, 1)
             # disable encryption by setting magic zero-key
             naomiboot.SECURITY_SetKeycode("\x00" * 8)
-            print("set keycode")
+
             self._message = "Uploading " + game_path
             # uploads file. Also sets "dimm information" (file length and crc32)
             naomiboot.DIMM_UploadFile(game_path)
             
             self._message = "Booting game"
-            print("booting")
+            
             # restart host, this will boot into game
             naomiboot.HOST_Restart()
 
@@ -89,14 +89,14 @@ class loadjob:
         '''
         Return value: True if there is no process associated with the job or the associated thread has ended.
         '''
+        if self._status == 0:
+            self._message = "Idle"
+
         if self._thread == None:
             return True
 
         if self._thread.isAlive():
             return False
-        
-        if self._status == 0:
-            self._message = "Idle"
 
         return True
 
