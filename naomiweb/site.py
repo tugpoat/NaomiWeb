@@ -145,7 +145,7 @@ def index():
                     if f[0] == a[0] and f[1] == a[1]:
                         num_matched += 1
 
-            if num_matched > 0:
+            if num_matched == len(filters):
                 temp.append(g)
                 
         return template('index', games=temp, filter_groups=filter_groups, filter_values=filter_values, activefilters=filters)
