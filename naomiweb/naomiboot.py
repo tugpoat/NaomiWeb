@@ -3,6 +3,7 @@
 # Please attribute properly, but only if you want.
 
 # Modified by Wesley Castro for NaomiWeb.
+# Also messed with by Pat Murphy.
 
 import struct, sys
 import socket

@@ -12,9 +12,8 @@ Requirements
  * Sega NAOMI 2 mainboard (Any BIOS revision will work)
 
  * NetDIMM cartridge w/ security PIC (NULL PIC recommended, but other PICs may work)
- * Raspberry Pi
+ * Raspberry Pi 3 (2 may work but will not be supported)
  * CAT5 Crossover Cable
- * WiFi Dongle (compatible models: http://elinux.org/RPi_USB_Wi-Fi_Adapters)
 
 ### Software:
  * Raspbian (other Linux distros should work, but haven't been tested)
@@ -46,6 +45,11 @@ Hardware Setup Example
 	                                  +------------------+
 Todo
 ----
- * Maybe support multiple endpoints for netbooting?
+ * Break out all database operations into model(s)
+ * Add ability to edit/manually install game entries
+ * Catch exit signals and close everything properly
+ * Create some kind of database manager so I don't have to support this forever or expect users to know SQL
  * Implement job system (loadgame.py). Jobs will keep track of threads sending data to a NetDIMM.
+ * Maybe support multiple endpoints for netbooting? Could be useful for users with a number of systems, or for running a tournament or something.
  * Unit tests and E2E tests
+ * Set up build pipeline and automatic SD image generation

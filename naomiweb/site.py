@@ -95,7 +95,8 @@ def build_games_list():
                         sql.execute("INSERT INTO installed_games(game_id, filename, file_hash) VALUES(" + str(identity[0]) + ",'" + filename + "','" + game.checksum + "')")
                         installed_game = sql.execute("SELECT * FROM installed_games WHERE game_id = " + str(identity[0])).fetchone()
 
-                    #FIXME: KNOWN ISSUE: IF TWO IDENTICAL-HEADER GAMES EXIST, THE SECOND WILL NEVER BE INSTALLED.
+                    #FIXME: KNOWN ISSUE, DESIGN FLAW/UNFIXABLE: IF TWO (OR MORE) IDENTICAL-HEADER GAMES EXIST, THE SECOND WILL NEVER BE INSTALLED. 
+                    #Not a huge issue but it's kind of annoying
                     
                     print(filename + " identified as " + identity[1])
                     game.id = identity[0]
