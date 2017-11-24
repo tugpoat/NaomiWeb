@@ -22,7 +22,7 @@ class naomidb:
 		return self._sqlite.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(game_id)).fetchall()
 
 	def installGame(self, game_id, filename, file_hash):
-		self._sqlite.execute("INSERT INTO installed_games(game_id, filename, file_hash) VALUES(" + str(identity[0]) + ",'" + filename + "','" + game.checksum + "')")
+		self._sqlite.execute("INSERT INTO installed_games(game_id, filename, file_hash) VALUES(" + str(game_id) + ",'" + filename + "','" + file_hash + "')")
 		self._sqlite.commit()
 
 	def rmInstalledGameById(self, installed_game_id):
