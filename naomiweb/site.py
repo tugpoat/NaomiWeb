@@ -5,7 +5,6 @@ import signal
 import string
 import configparser
 import json
-import sqlite3
 from naomidb import naomidb
 from naomigame import *
 from loadgame import *
@@ -19,8 +18,6 @@ games = []
 filters = []
 
 
-#this function is pretty spaghetti but further abstraction really isn't necessary
-#TODO: spin this off into its own thread/job
 def build_games_list():
     games = []
 
@@ -30,7 +27,6 @@ def build_games_list():
     installed_games = database.getInstalledGames()
     
     #check to make sure all the games we think are installed actually are. if not, purge them from the DB.
-    #TODO: catch exceptions? idk
     print("Checking installed games")
     for igame in installed_games:
         filepath = games_directory + '/' + igame[2]
@@ -78,7 +74,7 @@ def build_games_list():
 
             if installed: continue
 
-            # Verify t
+            # Verify that the file is actually a naomi netboot title and process it accordingly
             if(is_naomi_game(filepath)):
                 #print(filename)
                 game = NAOMIGame(filepath)
@@ -94,8 +90,9 @@ def build_games_list():
                         database.installGame(identity[0]. filename, game.checksum)
                         installed_game = database.getInstalledGame(identity[0])
 
-                    #FIXME: KNOWN ISSUE, DESIGN FLAW/UNFIXABLE: IF TWO (OR MORE) IDENTICAL-HEADER GAMES EXIST, THE SECOND WILL NEVER BE INSTALLED. 
+                    #FIXME: KNOWN ISSUE, DESIGN FLAW/UNFIXABLE: IF TWO (OR MORE) IDENTICAL-HEADER GAMES EXIST, THE SUBSEQUENT GAMES WILL NEVER BE INSTALLED. 
                     #Not a huge issue but it's kind of annoying
+                    #WORKAROUND/SOLUTION: Allow user to manually install games (maybe with custom information?)
                     
                     print(filename + " identified as " + identity[1])
                     game.id = identity[0]

@@ -45,7 +45,6 @@ Hardware Setup Example
 	                                  +------------------+
 Todo
 ----
- * Break out all database operations into model(s)
  * Add ability to edit/manually install game entries
  * Catch exit signals and close everything properly
  * Create some kind of database manager so I don't have to support this forever or expect users to know SQL
