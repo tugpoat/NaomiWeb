@@ -6,12 +6,14 @@ import string
 import configparser
 import json
 import sqlite3
+from naomidb import naomidb
 from naomigame import *
 from loadgame import *
 
+
 PREFS_FILE = "settings.cfg"
 prefs = configparser.ConfigParser()
-sql = None
+database = naomidb("naomiweb.sqlite")
 loadingjob = loadjob(1, 1)
 games = []
 filters = []
@@ -20,13 +22,12 @@ filters = []
 #this function is pretty spaghetti but further abstraction really isn't necessary
 #TODO: spin this off into its own thread/job
 def build_games_list():
-    global sql
     games = []
 
     games_directory = prefs['Games']['directory'] or 'games'
 
     #get list of installed games
-    installed_games = sql.execute("SELECT installed_games.id, games.id as game_id, filename, games.title as game_name, file_hash FROM installed_games JOIN games ON game_id=games.id ORDER BY game_name").fetchall()
+    installed_games = database.getInstalledGames()
     
     #check to make sure all the games we think are installed actually are. if not, purge them from the DB.
     #TODO: catch exceptions? idk
@@ -36,7 +37,7 @@ def build_games_list():
 
         if not os.path.isfile(filepath):
             print(igame[2] + " no longer installed, purging from DB")
-            sql.execute("DELETE FROM installed_games WHERE id=" + str(igame[0]))
+            database.rmInstalledGameById(igame[0])
             continue # process next item
 
         if(is_naomi_game(filepath)):
@@ -55,11 +56,9 @@ def build_games_list():
 
             game.id = igame[1]
             game.name = igame[3]
-            game.attributes = sql.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(igame[1])).fetchall()
-            games.append(game)
+            game.attributes = database.getGameAttributes(igame[1])
 
-    #don't commit any changes until we successfully scan installed games
-    sql.commit()
+            games.append(game)
 
 
 
@@ -84,16 +83,16 @@ def build_games_list():
                 #print(filename)
                 game = NAOMIGame(filepath)
 
-                identity = sql.execute("SELECT id, title FROM games WHERE header_title='" + str(game.name) + "' LIMIT 1").fetchone()
+                identity = database.getGameInformation(game.name)
                 #print(identity)
                 
                 if identity: #game is valid
-                    installed_game = sql.execute("SELECT * FROM installed_games WHERE game_id = " + str(identity[0])).fetchone()
+                    installed_game = database.getInstalledGame(identity[0])
                     
                     if not installed_game:
                         print ("\tInstalling "  + filename)
-                        sql.execute("INSERT INTO installed_games(game_id, filename, file_hash) VALUES(" + str(identity[0]) + ",'" + filename + "','" + game.checksum + "')")
-                        installed_game = sql.execute("SELECT * FROM installed_games WHERE game_id = " + str(identity[0])).fetchone()
+                        database.installGame(identity[0]. filename, game.checksum)
+                        installed_game = database.getInstalledGame(identity[0])
 
                     #FIXME: KNOWN ISSUE, DESIGN FLAW/UNFIXABLE: IF TWO (OR MORE) IDENTICAL-HEADER GAMES EXIST, THE SECOND WILL NEVER BE INSTALLED. 
                     #Not a huge issue but it's kind of annoying
@@ -101,7 +100,7 @@ def build_games_list():
                     print(filename + " identified as " + identity[1])
                     game.id = identity[0]
                     game.name = identity[1]
-                    game.attributes = sql.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(installed_game[1])).fetchall()
+                    game.attributes = database.getGameAttributes(installed_game[1])
                     games.append(game)
                 else:
                     print("\tUnable to identify " + filename)
@@ -111,23 +110,19 @@ def build_games_list():
                     game.attributes = []
                     games.append(game)
 
-        sql.commit()
-
     games.sort(key = lambda games: games.name.lower())
     return games
 
 
 @route('/')
 def index():
-    global games
-    global sql
 
     #Get filter information from DB and format it all nice for the template
-    filter_groups = sql.execute("SELECT * FROM attributes").fetchall()
+    filter_groups = database.getAttributes()
     filter_values = []
 
     for g in filter_groups:
-        values = sql.execute("SELECT id, value from attributes_values WHERE attribute_id=" + str(g[0])).fetchall()
+        values = database.getValuesForAttribute(g[0])
         temp = []
         for v in values:
             temp.append(v)
@@ -164,15 +159,11 @@ def updatedb():
 
 @route('/rescan')
 def rescan():
-    global games
     games = build_games_list()
 
 @route('/cleargames')
 def cleargames():
-    global sql
-    sql.execute("DELETE FROM installed_games")
-    sql.execute("VACUUM")
-    sql.commit()
+    database.purgeInstalledGames()
 
 @route('/filter/add/<name>/<value>')
 def add_filter(name, value):
@@ -273,8 +264,6 @@ def server_static(filepath):
 @error(404)
 def error404(error):
     return '<p>Error: 404</p>'
-
-sql = sqlite3.connect('naomiweb.sqlite')
 
 prefs_file = open(PREFS_FILE, 'r')
 prefs.read_file(prefs_file)

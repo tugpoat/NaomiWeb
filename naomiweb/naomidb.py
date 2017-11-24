@@ -7,9 +7,9 @@ class naomidb:
 	def __init__(self, dbfile):
 		self._dbfile = dbfile
 		try:
-			_sqlite = sqlite3.connect(self._dbfile)
+			self._sqlite = sqlite3.connect(self._dbfile)
 		except:
-			print "failed to connect to sqlite db"
+			print("failed to connect to sqlite db")
 			return
 
 	def getInstalledGames(self):
@@ -18,14 +18,20 @@ class naomidb:
 	def getInstalledGame(self, game_id):
 		return self._sqlite.execute("SELECT * FROM installed_games WHERE game_id = " + str(game_id) + " LIMIT 1").fetchone()
 
-	def getGameAttributesById(self, game_id):
+	def getGameAttributes(self, game_id):
 		return self._sqlite.execute("SELECT attributes.name as name, attributes_values.value as value FROM game_attributes JOIN attributes ON game_attributes.attribute_id=attributes.id JOIN attributes_values ON attributes_values_id=attributes_values.id WHERE game_id=" + str(game_id)).fetchall()
 
 	def installGame(self, game_id, filename, file_hash):
 		self._sqlite.execute("INSERT INTO installed_games(game_id, filename, file_hash) VALUES(" + str(identity[0]) + ",'" + filename + "','" + game.checksum + "')")
+		self._sqlite.commit()
 
-	def rmInstalledGameByInstalledGameId(self, installed_game_id):
+	def rmInstalledGameById(self, installed_game_id):
 		self._sqlite.execute("DELETE FROM installed_games WHERE id=" + str(installed_game_id))
+		self._sqlite.commit()
+
+	def purgeInstalledGames(self):
+		self._sqlite.execute("DELETE FROM installed_games")
+		self._sqlite.execute("VACUUM")
 		self._sqlite.commit()
 
 	def getGameInformation(self, header_title):
