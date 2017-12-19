@@ -39,8 +39,8 @@
 				<div><a class="game-link" href="load/{{game.checksum}}">{{game.name}}</a></div>
 				<div><span class="filename"><em>{{game.filename}}</em></span> <span class="label label-default fileinfo">{{round(game.size/float(1024*1024), 1)}} MB</span></div>
 			</div>
-			
 		</div>
+		<a href="edit/{{game.checksum}}"><span class="glyphicon glyphicon-edit"></span></a>
 	% end
 	% end
 

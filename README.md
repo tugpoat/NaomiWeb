@@ -45,8 +45,10 @@ Hardware Setup Example
 	                                  +------------------+
 Todo
 ----
- * Add ability to edit/manually install game entries
+ * Rework code to be more clean and efficient
  * Catch exit signals and close everything properly
+ * Incorporate actual messaging between load jobs and interface
+ * Support hardware reset
  * Create some kind of database manager so I don't have to support this forever or expect users to know SQL
  * Implement job system (loadgame.py). Jobs will keep track of threads sending data to a NetDIMM.
  * Maybe support multiple endpoints for netbooting? Could be useful for users with a number of systems, or for running a tournament or something.

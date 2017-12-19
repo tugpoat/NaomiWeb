@@ -247,6 +247,33 @@ def do_config():
 
     return template('config', network_ip=network_ip, network_subnet=network_subnet, games_directory=games_directory, skip_checksum=skip_checksum, did_config=True)
 
+@route('/edit/<hashid>', method='GET')
+def edit(hashid):
+    g = None
+    gamelist = database.getGameList()
+
+    g = [game for game in games if game.checksum == hashid][0]
+
+    return template('edit', filename=g.filename, game_title=g.name, hashid=hashid, games_list=gamelist)
+
+@route('/edit/<hashid>', method='POST')
+def do_edit(hashid):
+    global games
+    new_game_id = request.forms.get('games')
+    filename = request.forms.get('filename')
+    database.editGame(new_game_id, filename, hashid)
+    # Just rebuild the list for now
+    # FIXME: replace the list entry with the updated one instead
+    games = build_games_list()
+
+    # FIXME: Maybe kick them back to the index instead of doing all this?
+    g = None
+    gamelist = database.getGameList()
+
+    g = [game for game in games if game.checksum == hashid][0]
+
+    return template('edit', filename=g.filename, game_title=g.name, hashid=hashid, games_list=gamelist, did_edit=True)
+
 @route('/favicon.ico')
 def favicon():
     return static_file('favicon.ico', 'static')
