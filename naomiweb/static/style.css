@@ -11,9 +11,21 @@ body {
 	margin-bottom: 60px;
 }
 
+.rm-filter {
+	color: white;
+	font-size:10pt;
+	padding:0.1em;
+	background-color: #199ad6;
+}
+
+a.edit-link {
+	float: left;
+}
+
 div.game {
 	text-align: left;
 	display: block;
+	margin-left: 2em;
 	margin-bottom: 1em;
 	padding-top:.6em;
 	padding-bottom: .6em;
@@ -89,7 +101,7 @@ div.col1 a {
 	width: 40%;
 }
 #add-filter {
-	width: 10%;
+	width: 15%;
 }
 
 .filename {

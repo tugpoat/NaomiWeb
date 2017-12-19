@@ -89,10 +89,6 @@ def build_games_list():
                         print ("\tInstalling "  + filename)
                         database.installGame(identity[0]. filename, game.checksum)
                         installed_game = database.getInstalledGame(identity[0])
-
-                    #FIXME: KNOWN ISSUE, DESIGN FLAW/UNFIXABLE: IF TWO (OR MORE) IDENTICAL-HEADER GAMES EXIST, THE SUBSEQUENT GAMES WILL NEVER BE INSTALLED. 
-                    #Not a huge issue but it's kind of annoying
-                    #WORKAROUND/SOLUTION: Allow user to manually install games (maybe with custom information?)
                     
                     print(filename + " identified as " + identity[1])
                     game.id = identity[0]
@@ -156,6 +152,7 @@ def updatedb():
 
 @route('/rescan')
 def rescan():
+    global games
     games = build_games_list()
 
 @route('/cleargames')
@@ -203,8 +200,6 @@ def status():
 
 @route('/config', method='GET')
 def config():
-    global sql
-
     #ugh why is html so poopy for integrating with
     if prefs['Main']['skip_checksum'] == 'True':
         skip_checksum = 'checked'
@@ -220,7 +215,6 @@ def config():
 
 @route('/config', method='POST')
 def do_config():
-    print(request.forms.get('skip_checksum') )
     skip_checksum = request.forms.get('skip_checksum')
     network_ip = request.forms.get('network_ip')
     network_subnet = request.forms.get('network_subnet')

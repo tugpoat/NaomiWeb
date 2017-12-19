@@ -48,7 +48,7 @@
 			<div class="form-group">
 				<label class="col-sm-2 control-label"></label>
 				<div class="col-sm-3">
-					<button id="rescan-games">Rescan games</button>
+					<button id="rescan-games" class="btn btn-default">Rescan games</button>
 				</div>
 			</div>
 		</div>

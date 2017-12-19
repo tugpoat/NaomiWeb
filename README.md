@@ -46,6 +46,7 @@ Hardware Setup Example
 Todo
 ----
  * Rework code to be more clean and efficient
+ * Style the edit buttons to actually look and flow nice
  * Catch exit signals and close everything properly
  * Incorporate actual messaging between load jobs and interface
  * Support hardware reset

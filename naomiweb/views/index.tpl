@@ -19,7 +19,7 @@
 					</optgroup>
 				% end
 			</select>
-		<button id="add-filter">Add</button>
+		<button id="add-filter" class="btn btn-default">Add</button>
 
 	</div>
 	<div class="row container">
@@ -29,8 +29,9 @@
 		% end
 	</div>
 	% if defined('games'):
-	<p>Choose a game to play</p>
+	<h4>Choose a game to play</h4>
 	% for game in games:
+	<a class="edit-link" href="edit/{{game.checksum}}"><span class="glyphicon glyphicon-edit"></span></a>
 		<div class="label label-default game {{game.status}}">
 			<div class="col0">
 				<img src="/static/images/{{game.id}}.jpg" alt="game image">
@@ -40,7 +41,7 @@
 				<div><span class="filename"><em>{{game.filename}}</em></span> <span class="label label-default fileinfo">{{round(game.size/float(1024*1024), 1)}} MB</span></div>
 			</div>
 		</div>
-		<a href="edit/{{game.checksum}}"><span class="glyphicon glyphicon-edit"></span></a>
+		
 	% end
 	% end
 
