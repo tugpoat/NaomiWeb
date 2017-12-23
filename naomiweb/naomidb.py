@@ -53,7 +53,7 @@ class naomidb:
 		return self._sqlite.execute("SELECT id, title FROM games").fetchall()
 
 	def getGameInformation(self, header_title):
-		self._sqlite.execute("SELECT id, title FROM games WHERE header_title=? LIMIT 1", [header_title]).fetchone()
+		return self._sqlite.execute("SELECT id, title FROM games WHERE header_title = ? LIMIT 1", [header_title]).fetchone()
 
 	def getAttributes(self):
 		return self._sqlite.execute("SELECT * FROM attributes").fetchall()

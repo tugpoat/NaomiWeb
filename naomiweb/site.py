@@ -78,17 +78,15 @@ def build_games_list():
             if(is_naomi_game(filepath)):
                 #print(filename)
                 game = NAOMIGame(filepath)
-
                 identity = database.getGameInformation(game.name)
-                #print(identity)
                 
                 if identity: #game is valid
-                    installed_game = database.getInstalledGame(identity[0])
+                    installed_game = database.getInstalledGameByGameId(identity[0])
                     
                     if not installed_game:
                         print ("\tInstalling "  + filename)
-                        database.installGame(identity[0]. filename, game.checksum)
-                        installed_game = database.getInstalledGame(identity[0])
+                        database.installGame(identity[0], filename, game.checksum)
+                        installed_game = database.getInstalledGameByGameId(identity[0])
                     
                     print(filename + " identified as " + identity[1])
                     game.id = identity[0]
