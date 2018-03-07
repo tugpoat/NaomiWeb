@@ -3,6 +3,12 @@ import os
 import hashlib
 
 class NAOMIGame(object):
+    gid = None
+    name = None
+    status = None
+    filepath = None
+    filename = None
+    
     def __get_name(self):
         'Get game names from NAOMI rom file.'
         try:
