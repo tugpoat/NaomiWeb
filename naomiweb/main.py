@@ -1,4 +1,6 @@
 from pybus_core import PyBus
+
+from webui import WebUI
 from naomigame import *
 from loadgame import *
 
@@ -26,6 +28,13 @@ database = naomidb("naomiweb.sqlite")
 
 games = []
 
+
+#TODO: spawn logger
+#TODO: spawn ui/site instance
+
+#This may need to be its own process because both python and bottle are ass at threading
+app = WebUI('UI')
+app.run(host='localhost', port=8080)
 
 
 
