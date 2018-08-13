@@ -17,6 +17,14 @@
 				</div>
 			</div>
 		</div>
+		<div class="row container">
+			<div class="form-group">
+				<label class="col-sm-2 control-label">Enable GPIO Reset</label>
+				<div class="col-sm-3">
+					<input type="checkbox" class="form-control" name="gpio_reset" {{gpio_reset}} />
+				</div>
+			</div>
+		</div>
 		
 		<h2>Network</h2>
 		<div class="row container">

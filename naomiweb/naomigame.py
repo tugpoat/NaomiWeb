@@ -63,7 +63,16 @@ def get_game_name(filename):
     try:
         fp = open(filename, 'rb')
         fp.seek(0x30, os.SEEK_SET)
-        filename = fp.read(32).decode('utf-8').rstrip(' ').lstrip(' ')
+        title = fp.read(32).decode('utf-8').strip(' ')
+
+        '''
+        Dangit Darksoft lmao
+        Also, I didn't quite do my research, and ended up lifting this bit from some dude who forked off.
+        Hi ldindon! Keep at it :)
+        '''
+        if title == "AWNAOMI":
+                fp.seek(0xFF30)
+                title = fp.read(32).decode('utf-8').strip(' ')
         fp.close()
         return filename
 

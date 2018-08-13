@@ -204,12 +204,17 @@ def config():
     else:
         skip_checksum =  ''
 
+    if prefs['Main']['gpio_reset'] == 'True':
+        gpio_reset = 'checked'
+    else:
+        gpio_reset =  ''
+
     network_ip = prefs['Network']['ip'] or '192.168.0.10'
     network_subnet = prefs['Network']['subnet'] or '255.255.255.0'
     games_directory = prefs['Games']['directory'] or 'games'
 
     #render
-    return template('config', skip_checksum=skip_checksum, network_ip=network_ip, network_subnet=network_subnet, games_directory=games_directory)
+    return template('config', skip_checksum=skip_checksum, gpio_reset=gpio_reset, network_ip=network_ip, network_subnet=network_subnet, games_directory=games_directory)
 
 @route('/config', method='POST')
 def do_config():
@@ -223,7 +228,13 @@ def do_config():
     else:
         skip_checksum = 'False'
 
+    if gpio_reset == 'on':
+        gpio_reset = 'True'
+    else:
+        gpio_reset = 'False'
+
     prefs['Main']['skip_checksum'] = skip_checksum
+    prefs['Main']['gpio_reset'] = gpio_reset
     prefs['Network']['ip'] = network_ip
     prefs['Network']['subnet'] = network_subnet
     prefs['Games']['directory'] = games_directory

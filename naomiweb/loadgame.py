@@ -1,7 +1,11 @@
-import naomiboot
+from time import sleep
 import threading
 from configparser import *
+import RPi.GPIO as GPIO
 from naomigame import *
+import naomiboot
+
+
 
 '''
 A job sends a game to the NetDIMM. Each job has an associated thread (based on tiforce_tools) that sends a game's data over the network to the NetDIMM. A transfer is started with the start() method. Status of the transfer can be checked with finished().
@@ -26,6 +30,14 @@ class loadjob:
         '''
         thread worker for job.
         '''
+        if self._configuration.get('Main', 'gpio_reset') == 'True':
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(40, GPIO.OUT)
+            GPIO.output(40,1)
+            sleep(0.4)
+            GPIO.output(40,0)
+            sleep(2.0)
+
         game_path = self._game.filepath
         self._message = "Connecting to " + self._configuration.get('Network', 'ip')
         
