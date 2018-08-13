@@ -242,13 +242,18 @@ def do_config():
     with open(PREFS_FILE, 'w') as prefs_file:
         prefs.write(prefs_file)
 
-    #rework this asshat for html
+    #rework this thing for html
     if skip_checksum == 'True':
         skip_checksum = 'checked'
     else:
         skip_checksum = ''
 
-    return template('config', network_ip=network_ip, network_subnet=network_subnet, games_directory=games_directory, skip_checksum=skip_checksum, did_config=True)
+    if gpio_reset == 'True':
+        gpio_reset = 'checked'
+    else:
+        gpio_reset = ''
+
+    return template('config', network_ip=network_ip, network_subnet=network_subnet, games_directory=games_directory, skip_checksum=skip_checksum, gpio_reset=gpio_reset, did_config=True)
 
 @route('/edit/<hashid>', method='GET')
 def edit(hashid):
