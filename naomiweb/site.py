@@ -219,6 +219,7 @@ def config():
 @route('/config', method='POST')
 def do_config():
     skip_checksum = request.forms.get('skip_checksum')
+    gpio_reset = request.forms.get('gpio_reset')
     network_ip = request.forms.get('network_ip')
     network_subnet = request.forms.get('network_subnet')
     games_directory = request.forms.get('games_directory')
